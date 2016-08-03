@@ -10,7 +10,7 @@ local F, C, L = unpack(select(2, ...))
 F.frames = {} -- will contain fames created by mkframe()
 
 C.media = {
-			font = [[Interface\Addons\AffCT\HOOGE.TTF]],
+			font = [[Interface\Addons\affCT\HOOGE.TTF]],
 			fontsize = 16,
 			fontstyle = "OUTLINE",
 			justify = "CENTER"
@@ -83,13 +83,13 @@ F.mkframe = function(cfg, anchor, x, y)
 	f:SetSpacing(cfg.spacing and cfg.spacing or C.shared.spacing)
 	f:SetWidth(cfg.width)
 	f:SetHeight(cfg.height)
-	f:SetMaxLines(cfg.height / C.media.fontsize)
+	f:SetMaxLines(cfg.height / (cfg.fontsize and cfg.fontsize or C.media.fontsize))
 	f:SetMovable(true)
 	f:SetResizable(true)
 	f:SetMinResize(64,64)
 	f:SetMaxResize(768,768)
 	f:SetClampedToScreen(true)
-	f:SetClampRectInsets(0,0,C.media.fontsize,0)
+	f:SetClampRectInsets(0,0,cfg.fontsize and cfg.fontsize or C.media.fontsize,0)
 	f:SetJustifyH(cfg.justify and cfg.justify or C.shared.justify)
 	f:SetPoint(anchor, x and x or cfg.x, y and y or cfg.y)
 	tinsert(f,F.frames)
