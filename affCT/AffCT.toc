@@ -1,0 +1,8 @@
+## Interface: 70000
+## Title: |cffC495DDaff|rCT
+## Notes: Aff Combat Text (ex xCT)
+## Author: Affli
+## Version: 0.1
+## RequiredDeps: Blizzard_CombatText
+
+affCT.lua
