@@ -96,6 +96,8 @@ F.mkframe = function(cfg, anchor, x, y)
 
 
 	f.StartConfig = function(self)
+		if self.configuring then return end
+		self.configuring = true
 		self:SetBackdrop({
 						bgFile="Interface/Tooltips/UI-Tooltip-Background",
 						edgeFile="Interface/Tooltips/UI-Tooltip-Border",
@@ -142,6 +144,7 @@ F.mkframe = function(cfg, anchor, x, y)
 	end
 
 	f.StopConfig = function(self)
+			if not self.configuring then return end
 			self:SetBackdrop(nil)
 
 			self.fs:SetText(nil)
@@ -161,6 +164,7 @@ F.mkframe = function(cfg, anchor, x, y)
 			self:EnableMouse(false)
 			self:SetScript("OnDragStart",nil)
 			self:SetScript("OnDragStop",nil)
+			self.configuring = false
 	end
 
 	tinsert(f,F.frames)
