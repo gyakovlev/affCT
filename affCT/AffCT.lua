@@ -83,7 +83,8 @@ F.mkframe = function(cfg, anchor, x, y)
 	f:SetSpacing(cfg.spacing and cfg.spacing or C.shared.spacing)
 	f:SetWidth(cfg.width)
 	f:SetHeight(cfg.height)
-	f:SetMaxLines(cfg.height / (cfg.fontsize and cfg.fontsize or C.media.fontsize))
+	--f:SetMaxLines(cfg.height / (cfg.fontsize and cfg.fontsize or C.media.fontsize))
+	f:SetMaxLines(8)
 	f:SetMovable(true)
 	f:SetResizable(true)
 	f:SetMinResize(64,64)
@@ -92,6 +93,76 @@ F.mkframe = function(cfg, anchor, x, y)
 	f:SetClampRectInsets(0,0,cfg.fontsize and cfg.fontsize or C.media.fontsize,0)
 	f:SetJustifyH(cfg.justify and cfg.justify or C.shared.justify)
 	f:SetPoint(anchor, x and x or cfg.x, y and y or cfg.y)
+
+
+	f.StartConfig = function(self)
+		self:SetBackdrop({
+						bgFile="Interface/Tooltips/UI-Tooltip-Background",
+						edgeFile="Interface/Tooltips/UI-Tooltip-Border",
+						tile=false,tileSize=0,edgeSize=2,
+						insets={left=0,right=0,top=0,bottom=0}
+					})
+		self:SetBackdropColor(.1,.1,.1,.8)
+		self:SetBackdropBorderColor(.1,.1,.1,.5)
+
+		self.fs=self:CreateFontString(nil,"OVERLAY")
+		self.fs:SetFont(f:GetFont())
+		self.fs:SetPoint("BOTTOM",self,"TOP",0,0)
+		self.fs:SetText(string.gsub(self:GetName(), "affCT", ""))
+		self.fs:SetTextColor(1,.1,.1,.9)
+
+		self.t=self:CreateTexture"ARTWORK"
+		self.t:SetPoint("TOPLEFT",self,"TOPLEFT",1,-1)
+		self.t:SetPoint("TOPRIGHT",self,"TOPRIGHT",-1,-19)
+		self.t:SetHeight(20)
+		self.t:SetTexture(.5,.5,.5)
+		self.t:SetAlpha(.3)
+
+		self.d=self:CreateTexture"ARTWORK"
+		self.d:SetHeight(16)
+		self.d:SetWidth(16)
+		self.d:SetPoint("BOTTOMRIGHT",self,"BOTTOMRIGHT",-1,1)
+		self.d:SetTexture(.5,.5,.5)
+		self.d:SetAlpha(.3)
+
+		self.tr=self:CreateTitleRegion()
+		self.tr:SetPoint("TOPLEFT",self,"TOPLEFT",0,0)
+		self.tr:SetPoint("TOPRIGHT",self,"TOPRIGHT",0,0)
+		self.tr:SetHeight(20)
+
+		self:EnableMouse(true)
+		self:RegisterForDrag("LeftButton")
+		self:SetScript("OnDragStart",self.StartSizing)
+		--if not(ct.scrollable)then
+		self:SetScript("OnSizeChanged",function(self)
+		--  self:SetMaxLines(self:GetHeight()/ct.fontsize)
+			self:Clear()
+		end)
+		self:SetScript("OnDragStop",self.StopMovingOrSizing)
+	end
+
+	f.StopConfig = function(self)
+			self:SetBackdrop(nil)
+
+			self.fs:SetText(nil)
+			self.fs:Hide()
+			self.fs:ClearAllPoints()
+
+			self.t:Hide()
+			self.t:ClearAllPoints()
+
+			self.d:Hide()
+			self.d:ClearAllPoints()
+
+			self.tr:ClearAllPoints()
+			self.tr:SetParent(nil)
+			self.tr = nil
+
+			self:EnableMouse(false)
+			self:SetScript("OnDragStart",nil)
+			self:SetScript("OnDragStop",nil)
+	end
+
 	tinsert(f,F.frames)
 
 	if cfg.shakecrit then
@@ -162,70 +233,6 @@ F.mkframe = function(cfg, anchor, x, y)
 	return F.frames[#F.frames]
 end
 
-F.cfgframe = function(f)
-
-	f:SetBackdrop({
-					bgFile="Interface/Tooltips/UI-Tooltip-Background",
-					edgeFile="Interface/Tooltips/UI-Tooltip-Border",
-					tile=false,tileSize=0,edgeSize=2,
-					insets={left=0,right=0,top=0,bottom=0}
-				})
-	f:SetBackdropColor(.1,.1,.1,.8)
-	f:SetBackdropBorderColor(.1,.1,.1,.5)
-
-	f.fs=f:CreateFontString(nil,"OVERLAY")
-	f.fs:SetFont(f:GetFont())
-	f.fs:SetPoint("BOTTOM",f,"TOP",0,0)
-	f.fs:SetText(string.gsub(f:GetName(), "affCT", ""))
-	f.fs:SetTextColor(1,.1,.1,.9)
-
-	f.t=f:CreateTexture"ARTWORK"
-	f.t:SetPoint("TOPLEFT",f,"TOPLEFT",1,-1)
-	f.t:SetPoint("TOPRIGHT",f,"TOPRIGHT",-1,-19)
-	f.t:SetHeight(20)
-	f.t:SetTexture(.5,.5,.5)
-	f.t:SetAlpha(.3)
-
-	f.d=f:CreateTexture"ARTWORK"
-	f.d:SetHeight(16)
-	f.d:SetWidth(16)
-	f.d:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-1,1)
-	f.d:SetTexture(.5,.5,.5)
-	f.d:SetAlpha(.3)
-
-	f.tr=f:CreateTitleRegion()
-	f.tr:SetPoint("TOPLEFT",f,"TOPLEFT",0,0)
-	f.tr:SetPoint("TOPRIGHT",f,"TOPRIGHT",0,0)
-	f.tr:SetHeight(20)
-
-	f:EnableMouse(true)
-	f:RegisterForDrag("LeftButton")
-	f:SetScript("OnDragStart",f.StartSizing)
-	--if not(ct.scrollable)then
-	f:SetScript("OnSizeChanged",function(self)
-	--  self:SetMaxLines(self:GetHeight()/ct.fontsize)
-		self:Clear()
-	end)
-	f:SetScript("OnDragStop",f.StopMovingOrSizing)
-end
-
-stopcfg = function()
-	for i=1,#F.frames do
-		f=F.frames[i]
-		f:SetBackdrop(nil)
-		f.fs:Hide()
-		f.fs=nil
-		f.t:Hide()
-		f.t=nil
-		f.d:Hide()
-		f.d=nil
-		f.tr=nil
-		f:EnableMouse(false)
-		f:SetScript("OnDragStart",nil)
-		f:SetScript("OnDragStop",nil)
-	end
-end
-
 F.startswith = function(message,start)
 	 return string.sub(message,1,string.len(start))==start
 end
@@ -253,7 +260,7 @@ F.routemessage = function(message, r, g, b, displayType, isStaggered)
 	end
 
 	f:AddMessage(message, r, g, b)
-	--F.cfgframe(f)
+	f:StartConfig()
 end
 
 
@@ -273,6 +280,7 @@ ihf = F.mkframe(C.cfg.ihf, "CENTER")
 ]]
 
 local function StealCT()
+	print"stealing ct"
 	COMBAT_TEXT_TO_ANIMATE = {}
 	CombatText_ClearAnimationList()
 	CombatText:SetScript("OnUpdate", nil)
@@ -301,5 +309,6 @@ local function StealCT()
 
 	end
 end
+
 StealCT()
 hooksecurefunc("CombatText_OnLoad", StealCT)
