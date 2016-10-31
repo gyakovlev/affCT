@@ -4,10 +4,13 @@ namespace[1] = {} -- F, lib
 namespace[2] = {} -- C, config
 namespace[3] = {} -- L, local
 
+local debug = false
+
 local F, C, L = unpack(select(2, ...))
 
 --F.noop = function() end -- just in case
-F.frames = {} -- will contain fames created by mkframe()
+local print = function(msg) print("|cffC495DDaff|rCT:", tostring(msg)) end
+--F.frames = {} -- will contain fames created by mkframe()
 
 C.media = {
 			font = [[Interface\Addons\affCT\HOOGE.TTF]],
@@ -93,6 +96,7 @@ F.mkframe = function(cfg, anchor, x, y)
 	f:SetClampRectInsets(0,0,cfg.fontsize and cfg.fontsize or C.media.fontsize,0)
 	f:SetJustifyH(cfg.justify and cfg.justify or C.shared.justify)
 	f:SetPoint(anchor, x and x or cfg.x, y and y or cfg.y)
+	f:AddMessage("")
 
 
 	f.StartConfig = function(self)
@@ -167,7 +171,7 @@ F.mkframe = function(cfg, anchor, x, y)
 			self.configuring = false
 	end
 
-	tinsert(f,F.frames)
+	--tinsert(f,F.frames)
 
 	if cfg.shakecrit then
 			local fc=CreateFrame("ScrollingMessageFrame","affCTIncomingHealingFrameCrit",UIParent)
@@ -195,6 +199,7 @@ F.mkframe = function(cfg, anchor, x, y)
 			fc:SetJustifyH("CENTER")
 			--fc:SetAllPoints(f)
 			fc:SetPoint(anchor, x and x or cfg.x, y and y or cfg.y)
+			fc:AddMessage("")
 			local CritShake=fc:CreateAnimationGroup("$parentCritShake")
 			CritShake:SetLooping("BOUNCE")
 			local dur = cfg.timevisible / 4
@@ -234,11 +239,12 @@ F.mkframe = function(cfg, anchor, x, y)
 
 	end
 
-	return F.frames[#F.frames]
+	--return F.frames[#F.frames]
+	return f
 end
 
-F.startswith = function(message,start)
-	 return string.sub(message,1,string.len(start))==start
+F.startswith = function(message, start)
+	 return string.sub(message,1,string.len(start)) == start
 end
 
 F.stripnumbers = function(message)
@@ -264,7 +270,7 @@ F.routemessage = function(message, r, g, b, displayType, isStaggered)
 	end
 
 	f:AddMessage(message, r, g, b)
-	f:StartConfig()
+	if debug then f:StartConfig() end
 end
 
 
@@ -284,31 +290,34 @@ ihf = F.mkframe(C.cfg.ihf, "CENTER")
 ]]
 
 local function StealCT()
-	print"stealing ct"
+	if debug then print"stealing ct" end
 	COMBAT_TEXT_TO_ANIMATE = {}
 	CombatText_ClearAnimationList()
 	CombatText:SetScript("OnUpdate", nil)
 
 	for i=1, NUM_COMBAT_TEXT_LINES do
-		local string
-		string = _G["CombatText"..i]
-		string._SetText = string.SetText
-		string._SetTextColor = string.SetTextColor
-		string._Show = string.Show
+		local string = _G["CombatText"..i]
+		if not string.stolen then
+			string._SetText = string.SetText
+			string._SetTextColor = string.SetTextColor
+			string._Show = string.Show
 
-		function string.SetText(self, message)
-			self.message = message
-		end
+			function string.SetText(self, message)
+				self.message = message
+			end
 
-		function string.SetTextColor(self, r, g, b)
-			self.r = r
-			self.g = g
-			self.b = b
-		end
+			function string.SetTextColor(self, r, g, b)
+				self.r = r
+				self.g = g
+				self.b = b
+			end
 
-		function string.Show(self)
-			F.routemessage(self.message,self.r,self.g,self.b, nil, self.isCrit == 1)
-			self.isCrit = nil
+			function string.Show(self)
+				F.routemessage(self.message,self.r,self.g,self.b, nil, self.isCrit == 1)
+				self.isCrit = nil
+			end
+
+			string.stolen = true
 		end
 
 	end
